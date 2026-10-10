@@ -565,7 +565,7 @@ async function loadCustomPlaylist(playlistId, containerId) {
   container.textContent = 'Chargement des titres...';
 
   const response = await spotifyApi(
-    `/playlists/${playlistId}/tracks?limit=20`
+    `/playlists/${playlistId}/items?limit=20`
   );
 
   if (!response || !response.ok) {
@@ -578,7 +578,7 @@ async function loadCustomPlaylist(playlistId, containerId) {
   container.replaceChildren();
 
   (data.items || []).forEach((entry) => {
-    const track = entry.track;
+    const track = entry.item || entry.track;
     if (!track || !track.uri) return;
 
     const button = document.createElement('button');
