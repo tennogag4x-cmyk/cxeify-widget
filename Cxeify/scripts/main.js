@@ -553,3 +553,57 @@ showState('loading');
 setTimeout(() => {
   startPolling();
 }, 300);
+```javascript
+// ── Custom Spotify Playlists ─────────────────────────────────────
+const PLAYLIST_ONE = '1VDv3JMhP8o3VjpbAsYoDE';
+const PLAYLIST_TWO = '0Myd6ZRX9nAOPdEhkNrfcP';
+
+async function loadCustomPlaylist(playlistId, containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  container.textContent = 'Chargement des titres...';
+
+  const response = await spotifyApi(
+    `/playlists/${playlistId}/tracks?limit=20`
+  );
+
+  if (!response || !response.ok) {
+    container.textContent =
+      'Playlist inaccessible. Vérifie les autorisations Spotify.';
+    return;
+  }
+
+  const data = await response.json();
+  container.replaceChildren();
+
+  (data.items || []).forEach((entry) => {
+    const track = entry.track;
+    if (!track || !track.uri) return;
+
+    const button = document.createElement('button');
+    button.className = 'playlist-track';
+    button.textContent =
+      `${track.name} — ${track.artists.map(a => a.name).join(', ')}`;
+
+    button.addEventListener('click', async () => {
+      await spotifyApi('/me/player/play', 'PUT', {
+        uris: [track.uri]
+      });
+    });
+
+    container.appendChild(button);
+  });
+
+  if (!container.children.length) {
+    container.textContent = 'Aucun titre disponible.';
+  }
+}
+
+function loadBothPlaylists() {
+  loadCustomPlaylist(PLAYLIST_ONE, 'playlist-one');
+  loadCustomPlaylist(PLAYLIST_TWO, 'playlist-two');
+}
+
+setTimeout(loadBothPlaylists, 1500);
+```
